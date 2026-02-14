@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dancelot — вход</title>
+  <title>FrameDance — framedance.ru</title>
+  <meta name="description" content="FrameDance — база знаний по мастер-классам. Вход по ссылке из бота или через Telegram.">
+  <link rel="canonical" href="https://framedance.ru/">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -38,14 +40,14 @@
   </style>
 </head>
 <body>
-  <h1>Dancelot</h1>
-  <p>База знаний по мастер-классам</p>
+  <h1>FrameDance</h1>
+  <p><strong>framedance.ru</strong> — база знаний по мастер-классам</p>
 
   <p><strong>Войти по ссылке</strong> (работает на localhost и без настройки домена):</p>
   <div class="steps">
     <ol>
       <li>Сначала открой эту страницу (чтобы «разбудить» сервер на бесплатном хостинге).</li>
-      <li>В Telegram открой бота <strong>@Dancelot_bot</strong>, отправь <strong>/login</strong>.</li>
+      <li>В Telegram открой бота <strong>@FrameDance_bot</strong>, отправь <strong>/login</strong>.</li>
       <li>Скопируй <strong>всю ссылку целиком</strong> из ответа (длинная строка) и вставь в адресную строку этого браузера — не нажимай на ссылку в Telegram.</li>
     </ol>
   </div>
@@ -73,7 +75,7 @@
   </div>
   <script>
     (async () => {
-      const cfg = await fetch('/api/config').then(r => r.json()).catch(() => ({ botUsername: 'Dancelot_bot' }));
+      const cfg = await fetch('/api/config').then(r => r.json()).catch(() => ({ botUsername: 'FrameDance_bot' }));
       const authUrl = location.origin + '/api/auth/telegram-callback';
       const script = document.createElement('script');
       script.async = true;

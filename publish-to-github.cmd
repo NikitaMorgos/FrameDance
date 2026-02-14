@@ -21,15 +21,15 @@ echo. >> "%LOG%"
 
 "%GIT_EXE%" init >> "%LOG%" 2>&1
 "%GIT_EXE%" add . >> "%LOG%" 2>&1
-"%GIT_EXE%" commit -m "Initial commit: Dancelot - bot, web, recaps base" >> "%LOG%" 2>&1
+"%GIT_EXE%" commit -m "Initial commit: FrameDance - bot, web, recaps base" >> "%LOG%" 2>&1
 "%GIT_EXE%" branch -M main >> "%LOG%" 2>&1
-"%GIT_EXE%" remote add origin https://github.com/NikitaMorgos/Dancelot.git >> "%LOG%" 2>&1
-if errorlevel 1 "%GIT_EXE%" remote set-url origin https://github.com/NikitaMorgos/Dancelot.git >> "%LOG%" 2>&1
+"%GIT_EXE%" remote add origin https://github.com/NikitaMorgos/FrameDance.git >> "%LOG%" 2>&1
+if errorlevel 1 "%GIT_EXE%" remote set-url origin https://github.com/NikitaMorgos/FrameDance.git >> "%LOG%" 2>&1
 "%GIT_EXE%" push -u origin main >> "%LOG%" 2>&1
 
 echo. >> "%LOG%"
 echo Exit code: %ERRORLEVEL% >> "%LOG%"
 echo. >> "%LOG%"
-echo Repo: https://github.com/NikitaMorgos/Dancelot >> "%LOG%"
+echo Repo: https://github.com/NikitaMorgos/FrameDance >> "%LOG%"
 
 start notepad "%LOG%"

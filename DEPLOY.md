@@ -1,4 +1,4 @@
-# Деплой бэкенда Dancelot на Render — пошагово
+# Деплой бэкенда FrameDance на Render — пошагово
 
 Изменения уже запушены в GitHub. Дальше — только действия в браузере и копирование токена.
 
@@ -16,9 +16,9 @@
 
 1. На главной странице Render нажми синюю кнопку **New +**.
 2. В меню выбери **Web Service**.
-3. Увидишь список репозиториев GitHub. Найди **Dancelot** (репо NikitaMorgos/Dancelot).
-   - Если репозитория нет в списке — нажми **Configure account** или **Connect account** и дай доступ к нужному аккаунту/репо, затем снова выбери **Dancelot**.
-4. Нажми **Connect** напротив **Dancelot**.
+3. Увидишь список репозиториев GitHub. Найди **FrameDance** (репо NikitaMorgos/FrameDance).
+   - Если репозитория нет в списке — нажми **Configure account** или **Connect account** и дай доступ к нужному аккаунту/репо, затем снова выбери **FrameDance**.
+4. Нажми **Connect** напротив **FrameDance**.
 
 ---
 
@@ -28,7 +28,7 @@
 
 | Поле | Что указать |
 |------|-------------|
-| **Name** | `dancelot` (или любое имя — из него будет часть URL). |
+| **Name** | `framedance` (или любое имя — из него будет часть URL). |
 | **Region** | оставь по умолчанию (например Frankfurt). |
 | **Branch** | `main`. |
 | **Runtime** | **Node**. |
@@ -52,7 +52,7 @@
 
    **Вторая:**
    - **Key:** `BOT_USERNAME`
-   - **Value:** `Dancelot_bot`
+   - **Value:** `FrameDance_bot`
 
 4. Переменную `SITE_URL` **не добавляй** — на Render подставится адрес сервиса сам.
 
@@ -63,15 +63,15 @@
 1. Внизу страницы нажми **Create Web Service**.
 2. Начнётся сборка: в логах будет видно `npm install`, потом запуск. Подожди 2–5 минут.
 3. Когда вверху статус станет **Live** (зелёный), сервис работает.
-4. Скопируй URL сервиса — он вверху страницы, вида **https://dancelot-xxxx.onrender.com** (или как ты назвал сервис).
+4. Скопируй URL сервиса — он вверху страницы, вида **https://framedance-xxxx.onrender.com** (или как ты назвал сервис).
 
 ---
 
 ## Шаг 6. Проверка
 
-1. **Сайт:** открой скопированный URL в браузере. Должна открыться страница входа Dancelot («Войти по ссылке» и т.д.).
-2. **Бот:** в Telegram отправь боту **@Dancelot_bot** команду **/login**.
-   - В ответ должна прийти ссылка вида `https://dancelot-xxxx.onrender.com/auth/verify?t=...` (твой URL, не localhost и не GitHub).
+1. **Сайт:** открой скопированный URL в браузере. Должна открыться страница входа FrameDance («Войти по ссылке» и т.д.).
+2. **Бот:** в Telegram отправь боту **@FrameDance_bot** команду **/login**.
+   - В ответ должна прийти ссылка вида `https://framedance-xxxx.onrender.com/auth/verify?t=...` (твой URL, не localhost и не GitHub).
 3. **Вход:** открой эту ссылку из бота в браузере. Должен произойти вход и переход в базу рекапов.
 
 Если бот всё ещё присылает ссылку на GitHub Pages — подожди 1–2 минуты после деплоя и отправь **/login** ещё раз (бот уже работает на Render и подхватывает новый URL).
@@ -93,4 +93,4 @@
 
 ---
 
-Кратко: зайти на render.com → New → Web Service → Dancelot → Connect → в Environment добавить `TELEGRAM_BOT_TOKEN` и `BOT_USERNAME` → Create Web Service → дождаться Live → проверить сайт и /login в боте.
+Кратко: зайти на render.com → New → Web Service → FrameDance → Connect → в Environment добавить `TELEGRAM_BOT_TOKEN` и `BOT_USERNAME` → Create Web Service → дождаться Live → проверить сайт и /login в боте.

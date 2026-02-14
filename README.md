@@ -1,12 +1,14 @@
-# Dancelot — AI-поддержка танцора
+# FrameDance — AI-поддержка танцора
 
 База знаний по мастер-классам, доступ из Telegram-бота и с веб-сайта. Планируются: конкурсы, тренировки, прогресс, кабинет тренера.
+
+*(Раньше проект назывался **Dancelot**; история переименования и сделанной работы — в [HISTORY.md](HISTORY.md).)*
 
 ## Возможности
 
 - **Telegram-бот**: отправляешь видео рекапа с подписью — бот сохраняет в базу (стиль, уровень, навык, заметки). Команды `/list`, `/login`, меню с командами.
 - **Веб-сайт**: вход по ссылке из бота (`/login`), дашборд с рекапами, фильтры по стилю, просмотр заметок и видео.
-- **База**: SQLite (файл `data/dancelot.db`), структура по стилю/уровню/типу навыка.
+- **База**: SQLite (файл `data/framedance.db`), структура по стилю/уровню/типу навыка.
 
 ## Требования
 
@@ -16,8 +18,8 @@
 ## Установка
 
 ```bash
-git clone https://github.com/NikitaMorgos/Dancelot.git
-cd dancelot
+git clone https://github.com/NikitaMorgos/FrameDance.git
+cd FrameDance
 npm install
 ```
 
@@ -25,13 +27,13 @@ npm install
 
 ```env
 TELEGRAM_BOT_TOKEN=токен_от_BotFather
-BOT_USERNAME=Dancelot_bot
-DATABASE_PATH=./data/dancelot.db
+BOT_USERNAME=FrameDance_bot
+DATABASE_PATH=./data/framedance.db
 PORT=3000
 SITE_URL=http://localhost:3000
 ```
 
-Токен — **в одну строку**, без переносов. Имя бота (`BOT_USERNAME`) — без `@`, как в BotFather.
+Токен — **в одну строку**, без переносов. Имя бота (`BOT_USERNAME`) — без `@`, как в BotFather. Переименование бота (имя и @username): [BOT_RENAME.md](BOT_RENAME.md).
 
 ## Запуск
 
@@ -87,6 +89,10 @@ npm run server
 | `npm run db:init` | Создание БД (один раз) |
 | `npm run build` | Сборка TypeScript     |
 
+## Домен framedance.ru
+
+Если сайт должен открываться по адресу **https://framedance.ru** — привязка домена к Render, настройка BotFather и локальный запуск описаны в [DOMAIN.md](DOMAIN.md).
+
 ## Деплой (логин и база рекапов в интернете)
 
 Чтобы пользователи могли по ссылке из `/login` заходить на сайт и видеть свою базу рекапов, нужно развернуть бэкенд (бот + сервер) в интернете.
@@ -98,7 +104,7 @@ npm run server
 
 2. **Пример: Render.com**  
    - Подробно: [DEPLOY.md](DEPLOY.md).  
-   - В репозитории есть `render.yaml`: New → Web Service → подключи репо Dancelot, задай в Environment `TELEGRAM_BOT_TOKEN` и `BOT_USERNAME`, деплой.  
+   - В репозитории есть `render.yaml`: New → Web Service → подключи репо FrameDance, задай в Environment `TELEGRAM_BOT_TOKEN` и `BOT_USERNAME`, деплой.  
    - **Start Command:** `npm run start:all`. На Render ссылку для `/login` бот возьмёт из `RENDER_EXTERNAL_URL`, отдельно `SITE_URL` задавать не нужно.  
    - На бесплатном тарифе диск эфемерный — при перезапуске сервиса БД обнулится. Для постоянной базы нужен платный диск или внешняя БД.
 
@@ -106,7 +112,7 @@ npm run server
 
 ## GitHub Pages
 
-Чтобы сайт открывался по адресу `https://nikitamorgos.github.io/Dancelot/`:
+Чтобы сайт открывался по адресу `https://nikitamorgos.github.io/FrameDance/`:
 
 1. В репозитории на GitHub: **Settings** → **Pages**.
 2. **Source:** Deploy from a branch.

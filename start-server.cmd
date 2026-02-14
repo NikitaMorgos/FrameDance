@@ -13,7 +13,7 @@ if not defined NODE_DIR (
 )
 
 set "PATH=%NODE_DIR%;%PATH%"
-echo Запуск сайта Dancelot...
+echo Запуск сайта FrameDance...
 echo Открой в браузере: http://localhost:3000
 echo.
 start "" "http://localhost:3000"

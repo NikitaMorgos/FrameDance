@@ -33,7 +33,7 @@ function loadToken(): string {
 }
 
 const botToken = loadToken();
-const SESSION_COOKIE = "dancelot_session";
+const SESSION_COOKIE = "framedance_session";
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
 const app = express();
@@ -63,7 +63,7 @@ function parseSession(cookie: string | undefined): string | null {
 
 // GET /api/config — имя бота для виджета входа
 app.get("/api/config", (_req, res) => {
-  const botUsername = process.env.BOT_USERNAME || "Dancelot_bot";
+  const botUsername = process.env.BOT_USERNAME || "FrameDance_bot";
   res.json({ botUsername });
 });
 

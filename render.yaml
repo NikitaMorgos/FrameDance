@@ -3,7 +3,7 @@
 
 services:
   - type: web
-    name: dancelot
+    name: framedance
     runtime: node
     plan: free
 
@@ -12,6 +12,7 @@ services:
 
     envVars:
       - key: BOT_USERNAME
-        value: Dancelot_bot
-      # TELEGRAM_BOT_TOKEN — задай вручную в Dashboard (Environment)
-      # SITE_URL не нужен: на Render подставится RENDER_EXTERNAL_URL
+        value: FrameDance_bot
+# TELEGRAM_BOT_TOKEN — задай вручную в Dashboard (Environment)
+# SITE_URL не нужен: на Render подставится RENDER_EXTERNAL_URL
+# После переименования бота в BotFather обнови BOT_USERNAME (например FrameDance_bot)

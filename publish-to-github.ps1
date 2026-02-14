@@ -24,14 +24,14 @@ Write-Host ""
 
 & $git init
 & $git add .
-& $git commit -m "Initial commit: Dancelot - bot, web, recaps base"
+& $git commit -m "Initial commit: FrameDance - bot, web, recaps base"
 & $git branch -M main
-& $git remote add origin https://github.com/NikitaMorgos/Dancelot.git 2>$null
+& $git remote add origin https://github.com/NikitaMorgos/FrameDance.git 2>$null
 if ($LASTEXITCODE -ne 0) {
-    & $git remote set-url origin https://github.com/NikitaMorgos/Dancelot.git
+    & $git remote set-url origin https://github.com/NikitaMorgos/FrameDance.git
 }
 & $git push -u origin main
 
 Write-Host ""
-Write-Host "Готово. Репозиторий: https://github.com/NikitaMorgos/Dancelot" -ForegroundColor Green
+Write-Host "Готово. Репозиторий: https://github.com/NikitaMorgos/FrameDance" -ForegroundColor Green
 pause

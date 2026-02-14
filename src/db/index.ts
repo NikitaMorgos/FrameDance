@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Путь к БД относительно папки проекта (где package.json), чтобы бот и сервер использовали одну базу
 const projectRoot = join(__dirname, "..", "..");
-const DEFAULT_DB_PATH = join(projectRoot, "data", "dancelot.db");
+const DEFAULT_DB_PATH = join(projectRoot, "data", "framedance.db");
 
 export function getDbPath(): string {
   return process.env.DATABASE_PATH ?? DEFAULT_DB_PATH;
