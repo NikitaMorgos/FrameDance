@@ -3,57 +3,471 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FrameDance — framedance.ru</title>
-  <meta name="description" content="FrameDance — база знаний по мастер-классам. Вход по ссылке из бота или через Telegram.">
+  <title>FrameDance — рамка твоего развития</title>
+  <meta name="description" content="AI-тренер для танцоров и тренеров: рекапы, план тренировок, разбор видео, прогресс. Хастл, WCS, бачата, зук, контемп.">
   <link rel="canonical" href="https://framedance.ru/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* Палитра: основной #005F6B, фон страницы #FAFAFA, фон секций #F5F5F5, акцент #E8D5C4, голубой #A8DADC */
+    :root {
+      --primary: #005F6B;
+      --beige: #E8D5C4;
+      --bg-section: #F5F5F5;
+      --blue-light: #A8DADC;
+      --bg-page: #FAFAFA;
+      --text: #1a1a1a;
+      --text-muted: #5c5c5c;
+    }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin: 0;
-      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg-page);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* Шапка: светлая, без тёмной плашки */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-page);
+      border-bottom: 1px solid var(--bg-section);
+    }
+    .logo {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      min-height: 0;
+      flex-shrink: 0;
+    }
+    .logo img {
+      height: 60px;
+      width: auto;
+      display: block;
+      max-width: none;
+      object-fit: contain;
+    }
+    /* Отладка размера: раскомментируй, если лого рендерится мелко — в DevTools → Elements посмотри computed height/width у img */
+    /* .logo img { border: 1px solid red; } */
+    .nav { display: flex; align-items: center; gap: 1.5rem; }
+    .nav a { color: var(--text); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
+    .nav a:hover { color: var(--primary); }
+    .header .header-cta-button {
+      background-color: #006666;
+      color: #ffffff;
+    }
+    .header .header-cta-button:hover {
+      background-color: #005555;
+      color: #ffffff;
+    }
+    .btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      color: #e8e8e8;
-      padding: 1rem;
-    }
-    h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
-    p { color: #a0a0a0; margin-bottom: 1rem; text-align: center; max-width: 320px; }
-    .login-link {
-      background: #2563eb;
-      color: white;
-      padding: 0.75rem 1.5rem;
+      padding: 0.625rem 1.25rem;
       border-radius: 8px;
-      text-decoration: none;
       font-weight: 600;
-      margin: 1rem 0;
-      display: inline-block;
+      font-size: 0.9375rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: background 0.2s, color 0.2s;
     }
-    .login-link:hover { background: #1d4ed8; }
-    .steps { text-align: left; background: rgba(255,255,255,0.06); padding: 1rem 1.25rem; border-radius: 8px; margin-top: 1rem; max-width: 320px; }
-    .steps ol { margin: 0; padding-left: 1.25rem; color: #a0a0a0; line-height: 1.7; }
-    .error { color: #ff6b6b; margin-top: 1rem; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { opacity: 0.9; color: white; }
+    .btn-outline-dark { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline-dark:hover { background: rgba(0,95,107,0.06); }
+
+    /* Hero: фон public/hero.jpg + затемняющий overlay */
+    .hero {
+      position: relative;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 1.5rem;
+      background: url('hero.jpg') center/cover no-repeat;
+      color: #ffffff;
+      text-align: center;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
+      pointer-events: none;
+    }
+    .hero .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0 0 1.25rem;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero .subtitle {
+      font-size: 1.125rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.92);
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-btns .btn { min-width: 200px; }
+    .hero-btns .btn-primary { padding: 0.875rem 1.5rem; font-size: 1rem; }
+    .hero-btns a.link-second { color: var(--beige); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
+    .hero-btns a.link-second:hover { text-decoration: underline; }
+
+    /* Секции: воздух, только палитра */
+    section { padding: 4.5rem 1.5rem; max-width: 900px; margin: 0 auto; }
+    .section-title { font-size: 1.5rem; font-weight: 600; line-height: 1.4; margin: 0 0 0.75rem; color: var(--primary); }
+    .section-desc { color: var(--text-muted); margin-bottom: 2rem; max-width: 560px; font-size: 0.9375rem; line-height: 1.65; }
+    section.alt { background: var(--bg-section); }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--bg-section);
+    }
+    .card h3 { font-size: 1.0625rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--primary); }
+    .card p { margin: 0; font-size: 0.9375rem; color: var(--text-muted); line-height: 1.6; }
+
+    .styles-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .styles-list span {
+      padding: 0.5rem 1rem;
+      background: var(--beige);
+      border-radius: 999px;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; }
+    .step-num { font-size: 1.75rem; font-weight: 700; color: var(--blue-light); line-height: 1; margin-bottom: 0.5rem; }
+    .step h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.35rem; color: var(--text); }
+    .step p { margin: 0; font-size: 0.9375rem; color: var(--text-muted); line-height: 1.6; }
+
+    .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+    .feature {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.25rem;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid var(--bg-section);
+    }
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--blue-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.125rem;
+    }
+    .feature h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem; color: var(--text); }
+    .feature p { margin: 0; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
+
+    .platforms { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: center; }
+    .platform { text-align: center; }
+    .platform-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 0.5rem;
+      border-radius: 12px;
+      background: var(--blue-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .platform span { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); }
+
+    .screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .screen-placeholder {
+      aspect-ratio: 16/10;
+      background: var(--bg-section);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    .screen-caption { margin-top: 0.5rem; font-size: 0.8125rem; color: var(--text-muted); }
+
+    .cta-block {
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+      background: var(--bg-section);
+      border-radius: 16px;
+    }
+    .cta-block h2 { font-size: 1.375rem; font-weight: 600; margin: 0 0 0.75rem; color: var(--primary); }
+    .cta-block p { color: var(--text-muted); margin: 0 0 1.5rem; max-width: 480px; margin-left: auto; margin-right: auto; font-size: 0.9375rem; line-height: 1.6; }
+    .cta-block .btn-primary { padding: 0.875rem 1.75rem; font-size: 1rem; }
+
+    #vhod { background: var(--bg-section); padding: 4rem 1.5rem; text-align: center; }
+    #vhod .section-desc { margin-left: auto; margin-right: auto; }
+    #vhod .steps { text-align: left; max-width: 400px; margin: 1.5rem auto; background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--bg-section); }
+    #vhod .error { color: var(--primary); margin-top: 1rem; font-size: 0.9375rem; }
     #telegram-widget { margin-top: 1.5rem; }
+    #telegram-widget p { font-size: 0.875rem; color: var(--text-muted); }
+
+    @media (min-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .section-title { font-size: 1.625rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>FrameDance</h1>
-  <p><strong>framedance.ru</strong> — база знаний по мастер-классам</p>
+  <header class="header">
+    <a href="#" class="logo">
+      <img src="logo/FrameDance_logo_white.png" alt="FrameDance logo" />
+    </a>
+    <nav class="nav">
+      <a href="#kak-rabotaet">Как это работает</a>
+      <a href="#dlya-kogo">Кому нужно</a>
+      <a href="#vhod">Войти</a>
+      <a href="#vhod" class="btn btn-primary header-cta-button">Попробовать бесплатно</a>
+    </nav>
+  </header>
 
-  <p><strong>Войти по ссылке</strong> (работает на localhost и без настройки домена):</p>
-  <div class="steps">
-    <ol>
-      <li>Сначала открой эту страницу (чтобы «разбудить» сервер на бесплатном хостинге).</li>
-      <li>В Telegram открой бота <strong>@FrameDance_bot</strong>, отправь <strong>/login</strong>.</li>
-      <li>Скопируй <strong>всю ссылку целиком</strong> из ответа (длинная строка) и вставь в адресную строку этого браузера — не нажимай на ссылку в Telegram.</li>
-    </ol>
-  </div>
-  <p style="font-size: 0.8rem; color: #94a3b8;">Если бот запущен у тебя локально — останови его; должен работать только бот на Render.</p>
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <h1>AI‑тренер, который держит рамку твоего танцевального развития</h1>
+        <p class="subtitle">FrameDance помогает танцорам, тренерам и школам планировать практику, разбирать видео и системно расти в разных стилях — от хастла и модерн‑свинга до бачаты и контемпа.</p>
+        <div class="hero-btns">
+          <a href="#vhod" class="btn btn-primary">Попробовать бесплатно</a>
+          <a href="#dlya-trenerov" class="link-second">Для тренеров и школ</a>
+        </div>
+      </div>
+    </section>
 
-  <p class="error" id="err" hidden></p>
+    <section id="dlya-kogo">
+      <h2 class="section-title">Кому это нужно</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Танцорам</h3>
+          <p>Фиксируй рекапы с мастер‑классов, строй программу тренировок, следи за прогрессом в любимых стилях — от парных до сольных.</p>
+        </div>
+        <div class="card">
+          <h3>Тренерам</h3>
+          <p>Получай видео и заметки учеников в одном месте, давай структурный фидбек и собирай базу упражнений под разные уровни.</p>
+        </div>
+        <div class="card">
+          <h3>Танцевальным школам</h3>
+          <p>Создавай единую рамку для обучения: личные кабинеты учеников, работа тренеров, статистика по занятиям и соревнованиям.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="alt">
+      <h2 class="section-title">Разные стили</h2>
+      <p class="section-desc">FrameDance подходит для парных и сольных танцовщиков в разных направлениях: хастл, модерн свинг (WCS), бачата, зук, контемп и другие современные форматы.</p>
+      <div class="styles-list">
+        <span>Хастл</span>
+        <span>Модерн свинг</span>
+        <span>Бачата</span>
+        <span>Зук</span>
+        <span>Контемп</span>
+      </div>
+    </section>
+
+    <section id="kak-rabotaet">
+      <h2 class="section-title">Как FrameDance помогает держать рамку</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Фиксируешь всё важное</h3>
+          <p>Записываешь тренировки и мастер‑классы, отправляешь рекапы, добавляешь заметки и ссылки на вдохновляющие видео.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Планируешь практику</h3>
+          <p>Создаёшь программу тренировок под свои цели: техника, парное взаимодействие, музыкальность, подготовка к соревнованиям.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Разбираешь видео с AI и тренером</h3>
+          <p>AI подсвечивает ключевые моменты, тренер добавляет комментарии — всё хранится в одном месте и не теряется.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>Видишь прогресс</h3>
+          <p>Смотришь, как меняются навыки, нагрузка и результаты выступлений — по каждому стилю и периоду.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="alt">
+      <h2 class="section-title">Что умеет FrameDance</h2>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📋</div>
+          <div>
+            <h4>План тренировок</h4>
+            <p>Цели, недели, циклы под старты и просто под развитие.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎬</div>
+          <div>
+            <h4>Управление рекапами</h4>
+            <p>Видео, заметки и ссылки с МК и уроков в одном месте.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <div>
+            <h4>Разбор видео</h4>
+            <p>AI‑метрики и комментарии тренера по технике, connection и музыкальности.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">👤</div>
+          <div>
+            <h4>Работа с тренером</h4>
+            <p>Личный канал для фидбека, домашних заданий и упражнений.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📚</div>
+          <div>
+            <h4>Библиотека упражнений</h4>
+            <p>Набор упражнений и combo под разные стили и уровни.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📈</div>
+          <div>
+            <h4>Статистика и прогресс</h4>
+            <p>Графики практики, выполненных задач и выступлений.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🪪</div>
+          <div>
+            <h4>Личный кабинет танцора</h4>
+            <p>Вся история тренировок, видео и целей в одном профиле.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🏫</div>
+          <div>
+            <h4>Кабинет тренера и школы</h4>
+            <p>Ученики, группы, отчёты и активность в удобной панели.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Всегда под рукой</h2>
+      <p class="section-desc">FrameDance работает как мобильное приложение, Telegram‑бот и веб‑версия. Ты можешь отправить рекап прямо после мастер‑класса, открыть личный кабинет на ноутбуке или ответить ученику из телефона.</p>
+      <div class="platforms">
+        <div class="platform">
+          <div class="platform-icon">📱</div>
+          <span>Мобильное приложение</span>
+        </div>
+        <div class="platform">
+          <div class="platform-icon">✈️</div>
+          <span>Telegram‑бот</span>
+        </div>
+        <div class="platform">
+          <div class="platform-icon">💻</div>
+          <span>Веб‑кабинет</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="alt">
+      <h2 class="section-title">Личный кабинет танцора и тренера</h2>
+      <p class="section-desc">Твои тренировки, видео, задачи и результаты — в структурированной рамке.</p>
+      <div class="screens">
+        <div>
+          <div class="screen-placeholder">Лента рекапов и видео</div>
+          <p class="screen-caption">Лента рекапов и видео</p>
+        </div>
+        <div>
+          <div class="screen-placeholder">План тренировок и задачи</div>
+          <p class="screen-caption">План тренировок и задачи</p>
+        </div>
+        <div>
+          <div class="screen-placeholder">Статистика и прогресс</div>
+          <p class="screen-caption">Статистика и прогресс</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dlya-trenerov">
+      <div class="cta-block">
+        <h2>Инструмент для тренеров и школ</h2>
+        <p>Собирай видео учеников и фидбек в одном месте, без бесконечных чатов. Строй стандарт качества: программы, уровни, чек‑листы по стилям. Видь, кто как тренируется и к каким соревнованиям готовится.</p>
+        <a href="#vhod" class="btn btn-primary">Оставить заявку от школы</a>
+      </div>
+    </section>
+
+    <section class="alt">
+      <div class="cta-block">
+        <h2>Собери свою рамку развития уже сейчас</h2>
+        <p>Запусти первую неделю с FrameDance: выбери цель, загрузь рекап и получи план практики.</p>
+        <div class="hero-btns" style="justify-content: center;">
+          <a href="#vhod" class="btn btn-primary">Начать бесплатно</a>
+          <a href="#dlya-trenerov" class="btn btn-outline-dark">Я тренер / школа</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="vhod">
+      <h2 class="section-title">Войти в FrameDance</h2>
+      <p class="section-desc"><strong>Вход по ссылке</strong> (работает везде): открой бота <strong>@FrameDance_bot</strong> в Telegram, отправь <strong>/login</strong>, скопируй ссылку из ответа и открой её в браузере.</p>
+      <div class="steps">
+        <ol style="margin: 0; padding-left: 1.25rem; color: var(--text-muted); line-height: 1.8;">
+          <li>Открой эту страницу (на бесплатном хостинге так «будишь» сервер).</li>
+          <li>В Telegram: бот <strong>@FrameDance_bot</strong> → команда <strong>/login</strong>.</li>
+          <li>Скопируй всю ссылку из ответа и вставь в адресную строку браузера.</li>
+        </ol>
+      </div>
+      <p class="error" id="err" hidden></p>
+      <div id="telegram-widget">
+        <p>Либо войти через кнопку Telegram (нужен домен в BotFather):</p>
+        <div id="telegram-login"></div>
+      </div>
+    </section>
+  </main>
+
   <script>
     const params = new URLSearchParams(location.search);
     const errEl = document.getElementById('err');
@@ -61,18 +475,13 @@
       errEl.textContent = 'Ошибка входа по виджету. Используйте вход по ссылке выше.';
       errEl.hidden = false;
     } else if (params.get('error') === 'expired') {
-      errEl.textContent = 'Ссылка истекла или сервер перезапустился. Отправьте /login в боте заново и откройте новую ссылку сразу.';
+      errEl.textContent = 'Ссылка истекла. Отправьте /login в боте заново и откройте новую ссылку сразу.';
       errEl.hidden = false;
     } else if (params.get('error') === 'no_token') {
       errEl.textContent = 'Нет токена. Используйте команду /login в боте.';
       errEl.hidden = false;
     }
   </script>
-
-  <div id="telegram-widget">
-    <p style="font-size: 0.875rem;">Либо войти через кнопку Telegram (нужен домен в BotFather):</p>
-    <div id="telegram-login"></div>
-  </div>
   <script>
     (async () => {
       const cfg = await fetch('/api/config').then(r => r.json()).catch(() => ({ botUsername: 'FrameDance_bot' }));
