@@ -39,6 +39,10 @@ const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+// Главная страница — лендинг FrameDance из public/index.html
+app.get("/", (_req, res) => {
+  res.sendFile(join(process.cwd(), "public", "index.html"));
+});
 app.use(express.static(join(process.cwd(), "public")));
 app.get("/app", (_req, res) => {
   res.sendFile(join(process.cwd(), "public", "app.html"));
