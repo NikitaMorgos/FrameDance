@@ -91,57 +91,70 @@
     .btn-outline-dark { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
     .btn-outline-dark:hover { background: rgba(0,95,107,0.06); }
 
-    /* Hero: фон public/hero.jpg + затемняющий overlay */
+    /* Hero: фон public/hero/hero_Fr-0.png, текст слева, пара танцоров справа */
     .hero {
       position: relative;
-      min-height: 60vh;
+      min-height: 80vh;
+      background: url('hero/hero_Fr-0.png') center right/cover no-repeat;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 100px 1.5rem;
-      background: url('hero.jpg') center/cover no-repeat;
+      align-items: center;
       color: #ffffff;
-      text-align: center;
     }
     .hero::before {
       content: "";
       position: absolute;
       inset: 0;
       z-index: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
+      background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.25),
+        transparent
+      );
       pointer-events: none;
     }
-    .hero .hero-content {
+    .hero-inner {
       position: relative;
       z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 96px 24px;
+      width: 100%;
     }
-    .hero h1 {
+    .hero-text {
+      max-width: 540px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .hero-text h1 {
       font-size: 2rem;
       font-weight: 700;
       line-height: 1.3;
       margin: 0 0 1.25rem;
-      max-width: 640px;
-      margin-left: auto;
-      margin-right: auto;
     }
-    .hero .subtitle {
+    .hero-text .subtitle {
       font-size: 1.125rem;
       line-height: 1.65;
       color: rgba(255,255,255,0.92);
-      max-width: 560px;
-      margin: 0 auto 2.5rem;
+      margin: 0;
     }
-    .hero-btns {
+    .hero-actions {
+      margin-top: 32px;
       display: flex;
+      gap: 16px;
       flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
       align-items: center;
     }
+    .hero-actions .btn { min-width: 200px; }
+    .hero-actions .btn-primary { padding: 0.875rem 1.5rem; font-size: 1rem; }
+    .hero-actions .primary-cta { background-color: #006666; color: #ffffff; }
+    .hero-actions .primary-cta:hover { background-color: #005555; color: #ffffff; }
+    .hero-actions a.link-second { color: var(--beige); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
+    .hero-actions a.link-second:hover { text-decoration: underline; }
+
+    /* CTA-блоки (секции ниже hero) */
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center; }
     .hero-btns .btn { min-width: 200px; }
     .hero-btns .btn-primary { padding: 0.875rem 1.5rem; font-size: 1rem; }
-    .hero-btns a.link-second { color: var(--beige); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
-    .hero-btns a.link-second:hover { text-decoration: underline; }
 
     /* Секции: воздух, только палитра */
     section { padding: 4.5rem 1.5rem; max-width: 900px; margin: 0 auto; }
@@ -237,12 +250,14 @@
     .cta-block p { color: var(--text-muted); margin: 0 0 1.5rem; max-width: 480px; margin-left: auto; margin-right: auto; font-size: 0.9375rem; line-height: 1.6; }
     .cta-block .btn-primary { padding: 0.875rem 1.75rem; font-size: 1rem; }
 
-    #vhod { background: var(--bg-section); padding: 4rem 1.5rem; text-align: center; }
-    #vhod .section-desc { margin-left: auto; margin-right: auto; }
-    #vhod .steps { text-align: left; max-width: 400px; margin: 1.5rem auto; background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--bg-section); }
-    #vhod .error { color: var(--primary); margin-top: 1rem; font-size: 0.9375rem; }
-    #telegram-widget { margin-top: 1.5rem; }
-    #telegram-widget p { font-size: 0.875rem; color: var(--text-muted); }
+    .footer {
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+    .footer a { color: var(--primary); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
 
     /* Модальное окно подписки */
     .subscribe-modal {
@@ -309,8 +324,22 @@
     }
 
     @media (min-width: 768px) {
-      .hero h1 { font-size: 2.5rem; }
+      .hero-text h1 { font-size: 2.5rem; }
       .section-title { font-size: 1.625rem; }
+    }
+
+    @media (max-width: 768px) {
+      .hero { align-items: flex-end; }
+      .hero-inner { padding: 80px 16px 40px; }
+      .hero-text { max-width: 100%; text-align: left; }
+      .hero::before {
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.7),
+          rgba(0, 0, 0, 0.3),
+          transparent
+        );
+      }
     }
   </style>
 </head>
@@ -322,19 +351,21 @@
     <nav class="nav">
       <a href="#kak-rabotaet">Как это работает</a>
       <a href="#dlya-kogo">Кому нужно</a>
-      <a href="#vhod">Войти</a>
+      <a href="#" class="js-open-subscribe">Войти</a>
       <a href="#" class="btn btn-primary header-cta-button js-open-subscribe">Узнать о запуске</a>
     </nav>
   </header>
 
   <main>
     <section class="hero">
-      <div class="hero-content">
-        <h1>AI‑тренер, который держит рамку твоего танцевального развития</h1>
-        <p class="subtitle">FrameDance помогает танцорам, тренерам и школам планировать практику, разбирать видео и системно расти в разных стилях — от хастла и модерн‑свинга до бачаты и контемпа.</p>
-        <div class="hero-btns">
-          <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
-          <a href="#dlya-trenerov" class="link-second">Для тренеров и школ</a>
+      <div class="hero-inner">
+        <div class="hero-text">
+          <h1>AI‑тренер, который держит рамку твоего танцевального развития</h1>
+          <p class="subtitle">FrameDance помогает танцорам, тренерам и школам планировать практику, разбирать видео и системно расти в разных стилях — от хастла и модерн‑свинга до бачаты и контемпа.</p>
+          <div class="hero-actions">
+            <a href="#" class="btn btn-primary primary-cta js-open-subscribe">Узнать о запуске</a>
+            <a href="#dlya-trenerov" class="link-second">Для тренеров и школ</a>
+          </div>
         </div>
       </div>
     </section>
@@ -476,25 +507,6 @@
       </div>
     </section>
 
-    <section class="alt">
-      <h2 class="section-title">Личный кабинет танцора и тренера</h2>
-      <p class="section-desc">Твои тренировки, видео, задачи и результаты — в структурированной рамке.</p>
-      <div class="screens">
-        <div>
-          <div class="screen-placeholder">Лента рекапов и видео</div>
-          <p class="screen-caption">Лента рекапов и видео</p>
-        </div>
-        <div>
-          <div class="screen-placeholder">План тренировок и задачи</div>
-          <p class="screen-caption">План тренировок и задачи</p>
-        </div>
-        <div>
-          <div class="screen-placeholder">Статистика и прогресс</div>
-          <p class="screen-caption">Статистика и прогресс</p>
-        </div>
-      </div>
-    </section>
-
     <section id="dlya-trenerov">
       <div class="cta-block">
         <h2>Инструмент для тренеров и школ</h2>
@@ -514,23 +526,11 @@
       </div>
     </section>
 
-    <section id="vhod">
-      <h2 class="section-title">Войти в FrameDance</h2>
-      <p class="section-desc"><strong>Вход по ссылке</strong> (работает везде): открой бота <strong>@FrameDance_bot</strong> в Telegram, отправь <strong>/login</strong>, скопируй ссылку из ответа и открой её в браузере.</p>
-      <div class="steps">
-        <ol style="margin: 0; padding-left: 1.25rem; color: var(--text-muted); line-height: 1.8;">
-          <li>Открой эту страницу (на бесплатном хостинге так «будишь» сервер).</li>
-          <li>В Telegram: бот <strong>@FrameDance_bot</strong> → команда <strong>/login</strong>.</li>
-          <li>Скопируй всю ссылку из ответа и вставь в адресную строку браузера.</li>
-        </ol>
-      </div>
-      <p class="error" id="err" hidden></p>
-      <div id="telegram-widget">
-        <p>Либо войти через кнопку Telegram (нужен домен в BotFather):</p>
-        <div id="telegram-login"></div>
-      </div>
-    </section>
   </main>
+
+  <footer class="footer">
+    <p>Сервис в разработке. Контакт: <a href="https://t.me/nikitamorgos" target="_blank" rel="noopener">@nikitamorgos</a></p>
+  </footer>
 
   <!-- Модальное окно подписки -->
   <div id="subscribe-modal" class="subscribe-modal" role="dialog" aria-label="Подписка на запуск">
@@ -602,34 +602,6 @@
         }
         btn.disabled = false;
       });
-    })();
-  </script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const errEl = document.getElementById('err');
-    if (params.get('error') === 'invalid') {
-      errEl.textContent = 'Ошибка входа по виджету. Используйте вход по ссылке выше.';
-      errEl.hidden = false;
-    } else if (params.get('error') === 'expired') {
-      errEl.textContent = 'Ссылка истекла. Отправьте /login в боте заново и откройте новую ссылку сразу.';
-      errEl.hidden = false;
-    } else if (params.get('error') === 'no_token') {
-      errEl.textContent = 'Нет токена. Используйте команду /login в боте.';
-      errEl.hidden = false;
-    }
-  </script>
-  <script>
-    (async () => {
-      const cfg = await fetch('/api/config').then(r => r.json()).catch(() => ({ botUsername: 'FrameDance_bot' }));
-      const authUrl = location.origin + '/api/auth/telegram-callback';
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.setAttribute('data-telegram-login', cfg.botUsername);
-      script.setAttribute('data-size', 'large');
-      script.setAttribute('data-auth-url', authUrl);
-      script.setAttribute('data-request-access', 'write');
-      document.getElementById('telegram-login').appendChild(script);
     })();
   </script>
 </body>
