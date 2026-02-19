@@ -46,21 +46,17 @@
       border-bottom: 1px solid var(--bg-section);
     }
     .logo {
-      text-decoration: none;
       display: flex;
       align-items: center;
-      min-height: 0;
+      text-decoration: none;
       flex-shrink: 0;
     }
     .logo img {
-      height: 60px;
+      height: 40px;
       width: auto;
       display: block;
-      max-width: none;
       object-fit: contain;
     }
-    /* Отладка размера: раскомментируй, если лого рендерится мелко — в DevTools → Elements посмотри computed height/width у img */
-    /* .logo img { border: 1px solid red; } */
     .nav { display: flex; align-items: center; gap: 1.5rem; }
     .nav a { color: var(--text); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
     .nav a:hover { color: var(--primary); }
@@ -211,8 +207,8 @@
     .feature h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem; color: var(--text); }
     .feature p { margin: 0; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
 
-    .platforms { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: center; }
-    .platform { text-align: center; }
+    .platforms { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: flex-start; }
+    .platform { display: flex; flex-direction: column; align-items: center; text-align: center; }
     .platform-icon {
       width: 56px;
       height: 56px;
@@ -224,6 +220,8 @@
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
+      line-height: 56px;
+      flex-shrink: 0;
     }
     .platform span { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); }
 
@@ -345,8 +343,8 @@
 </head>
 <body>
   <header class="header">
-    <a href="#" class="logo">
-      <img src="logo/FrameDance_logo_white.png" alt="FrameDance logo" />
+    <a href="/" class="logo">
+      <img src="/logo/FrameDance_logo_main.jpg" alt="FrameDance" />
     </a>
     <nav class="nav">
       <a href="#kak-rabotaet">Как это работает</a>
@@ -512,17 +510,6 @@
         <h2>Инструмент для тренеров и школ</h2>
         <p>Собирай видео учеников и фидбек в одном месте, без бесконечных чатов. Строй стандарт качества: программы, уровни, чек‑листы по стилям. Видь, кто как тренируется и к каким соревнованиям готовится.</p>
         <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
-      </div>
-    </section>
-
-    <section class="alt">
-      <div class="cta-block">
-        <h2>Собери свою рамку развития уже сейчас</h2>
-        <p>Запусти первую неделю с FrameDance: выбери цель, загрузь рекап и получи план практики.</p>
-        <div class="hero-btns" style="justify-content: center;">
-          <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
-          <a href="#dlya-trenerov" class="btn btn-outline-dark">Я тренер / школа</a>
-        </div>
       </div>
     </section>
 
