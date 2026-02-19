@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import express from "express";
 import cookieParser from "cookie-parser";
-import { initDb } from "../db/index.js";
+import { initDb, getDb } from "../db/index.js";
 import { listMasterClasses, getMasterClassById } from "../knowledge/masterClasses.js";
 import { consumeLoginToken } from "../knowledge/loginTokens.js";
 import { verifyTelegramLogin } from "./telegramAuth.js";
@@ -69,6 +69,27 @@ function parseSession(cookie: string | undefined): string | null {
 app.get("/api/config", (_req, res) => {
   const botUsername = process.env.BOT_USERNAME || "FrameDance_bot";
   res.json({ botUsername });
+});
+
+// POST /api/subscribe — подписка на запуск (форма «Узнать о запуске»)
+app.post("/api/subscribe", (req, res) => {
+  const email = (req.body?.email as string)?.trim()?.toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "Некорректный email" });
+  }
+  try {
+    const db = getDb();
+    db.prepare("INSERT INTO subscribers (email) VALUES (?)").run(email);
+    res.json({ ok: true });
+  } catch (e) {
+    // UNIQUE constraint — уже подписан
+    const msg = String((e as Error).message || "");
+    if (msg.includes("UNIQUE") || msg.includes("unique")) {
+      return res.json({ ok: true }); // не раскрываем, что уже в базе
+    }
+    console.error("Subscribe error:", e);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
 });
 
 // GET /api/auth/telegram-callback — редирект от Telegram Login Widget (query-параметры)

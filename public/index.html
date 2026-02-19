@@ -244,6 +244,70 @@
     #telegram-widget { margin-top: 1.5rem; }
     #telegram-widget p { font-size: 0.875rem; color: var(--text-muted); }
 
+    /* Модальное окно подписки */
+    .subscribe-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .subscribe-modal.show { display: flex; }
+    .subscribe-modal .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .subscribe-modal h3 { margin: 0 0 1rem; font-size: 1.25rem; color: var(--primary); }
+    .subscribe-modal p { margin: 0 0 1.25rem; color: var(--text-muted); font-size: 0.9375rem; }
+    .subscribe-modal form { display: flex; flex-direction: column; gap: 1rem; }
+    .subscribe-modal input[type="email"] {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--bg-section);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .subscribe-modal input:focus { outline: none; border-color: var(--primary); }
+    .subscribe-modal .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+    .subscribe-modal .modal-close:hover { color: var(--text); }
+    .subscribe-modal .modal-inner { position: relative; }
+    /* Тост успеха */
+    .subscribe-toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+      z-index: 201;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .subscribe-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     @media (min-width: 768px) {
       .hero h1 { font-size: 2.5rem; }
       .section-title { font-size: 1.625rem; }
@@ -259,7 +323,7 @@
       <a href="#kak-rabotaet">Как это работает</a>
       <a href="#dlya-kogo">Кому нужно</a>
       <a href="#vhod">Войти</a>
-      <a href="#vhod" class="btn btn-primary header-cta-button">Попробовать бесплатно</a>
+      <a href="#" class="btn btn-primary header-cta-button js-open-subscribe">Узнать о запуске</a>
     </nav>
   </header>
 
@@ -269,7 +333,7 @@
         <h1>AI‑тренер, который держит рамку твоего танцевального развития</h1>
         <p class="subtitle">FrameDance помогает танцорам, тренерам и школам планировать практику, разбирать видео и системно расти в разных стилях — от хастла и модерн‑свинга до бачаты и контемпа.</p>
         <div class="hero-btns">
-          <a href="#vhod" class="btn btn-primary">Попробовать бесплатно</a>
+          <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
           <a href="#dlya-trenerov" class="link-second">Для тренеров и школ</a>
         </div>
       </div>
@@ -435,7 +499,7 @@
       <div class="cta-block">
         <h2>Инструмент для тренеров и школ</h2>
         <p>Собирай видео учеников и фидбек в одном месте, без бесконечных чатов. Строй стандарт качества: программы, уровни, чек‑листы по стилям. Видь, кто как тренируется и к каким соревнованиям готовится.</p>
-        <a href="#vhod" class="btn btn-primary">Оставить заявку от школы</a>
+        <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
       </div>
     </section>
 
@@ -444,7 +508,7 @@
         <h2>Собери свою рамку развития уже сейчас</h2>
         <p>Запусти первую неделю с FrameDance: выбери цель, загрузь рекап и получи план практики.</p>
         <div class="hero-btns" style="justify-content: center;">
-          <a href="#vhod" class="btn btn-primary">Начать бесплатно</a>
+          <a href="#" class="btn btn-primary js-open-subscribe">Узнать о запуске</a>
           <a href="#dlya-trenerov" class="btn btn-outline-dark">Я тренер / школа</a>
         </div>
       </div>
@@ -468,6 +532,78 @@
     </section>
   </main>
 
+  <!-- Модальное окно подписки -->
+  <div id="subscribe-modal" class="subscribe-modal" role="dialog" aria-label="Подписка на запуск">
+    <div class="modal-content">
+      <div class="modal-inner">
+        <button type="button" class="modal-close js-close-subscribe" aria-label="Закрыть">&times;</button>
+        <h3>Узнать о запуске</h3>
+        <p>Оставьте email — напишем, когда FrameDance будет готов.</p>
+        <form id="subscribe-form">
+          <input type="email" name="email" placeholder="your@email.com" required autocomplete="email" />
+          <button type="submit" class="btn btn-primary">Подтвердить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="subscribe-toast" class="subscribe-toast">Напишем вам, когда запустимся</div>
+
+  <script>
+    // Подписка на запуск
+    (function() {
+      const modal = document.getElementById('subscribe-modal');
+      const form = document.getElementById('subscribe-form');
+      const toast = document.getElementById('subscribe-toast');
+      const openBtns = document.querySelectorAll('.js-open-subscribe');
+      const closeBtns = document.querySelectorAll('.js-close-subscribe');
+      function openModal() {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+      function showToast() {
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 3000);
+      }
+      openBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) { e.preventDefault(); openModal(); });
+      });
+      closeBtns.forEach(function(btn) {
+        btn.addEventListener('click', closeModal);
+      });
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = form.querySelector('[name="email"]').value.trim();
+        if (!email) return;
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        try {
+          const r = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+          });
+          const data = await r.json();
+          if (data.ok) {
+            closeModal();
+            showToast();
+            form.reset();
+          } else {
+            alert(data.error || 'Ошибка. Попробуйте позже.');
+          }
+        } catch (err) {
+          alert('Ошибка сети. Попробуйте позже.');
+        }
+        btn.disabled = false;
+      });
+    })();
+  </script>
   <script>
     const params = new URLSearchParams(location.search);
     const errEl = document.getElementById('err');
