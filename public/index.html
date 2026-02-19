@@ -45,6 +45,10 @@
       background: var(--bg-page);
       border-bottom: 1px solid var(--bg-section);
     }
+    .logo,
+    .logo img {
+      background-color: transparent;
+    }
     .logo {
       display: flex;
       align-items: center;
@@ -52,10 +56,12 @@
       flex-shrink: 0;
     }
     .logo img {
-      height: 40px;
+      height: 48px;
       width: auto;
       display: block;
       object-fit: contain;
+      max-height: none;
+      max-width: none;
     }
     .nav { display: flex; align-items: center; gap: 1.5rem; }
     .nav a { color: var(--text); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
@@ -344,7 +350,7 @@
 <body>
   <header class="header">
     <a href="/" class="logo">
-      <img src="/logo/FrameDance_logo_main.jpg" alt="FrameDance" />
+      <img src="/logo/FrameDance_logo_main.png" alt="FrameDance" />
     </a>
     <nav class="nav">
       <a href="#kak-rabotaet">Как это работает</a>
