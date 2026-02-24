@@ -8,6 +8,7 @@ import { initDb, getDb } from "../db/index.js";
 import { listMasterClasses, getMasterClassById } from "../knowledge/masterClasses.js";
 import { consumeLoginToken } from "../knowledge/loginTokens.js";
 import { verifyTelegramLogin } from "./telegramAuth.js";
+import { hashPassword, verifyPassword } from "./password.js";
 
 function loadToken(): string {
   let t = process.env.TELEGRAM_BOT_TOKEN?.replace(/\s/g, "").trim() ?? "";
@@ -44,25 +45,38 @@ app.get("/", (_req, res) => {
   res.sendFile(join(process.cwd(), "public", "index.html"));
 });
 app.use(express.static(join(process.cwd(), "public")));
-app.get("/app", (_req, res) => {
+app.get("/app", (req, res) => {
+  if (!getEmailUserId(req.cookies?.[SESSION_COOKIE])) {
+    return res.redirect("/login");
+  }
   res.sendFile(join(process.cwd(), "public", "app.html"));
 });
+app.get("/login", (_req, res) => {
+  res.sendFile(join(process.cwd(), "public", "login.html"));
+});
 
-// Простая сессия: cookie хранит telegram_id (подпись через secret)
+// Сессия: для входа по email храним "e" + users.id; для Telegram — "t" + telegram_id
 function getSessionSecret(): string {
   return process.env.SESSION_SECRET || botToken.slice(-16);
 }
-function signSession(userId: string): string {
-  const h = createHmac("sha256", getSessionSecret()).update(userId).digest("hex").slice(0, 16);
-  return `${userId}.${h}`;
+function signSession(payload: string): string {
+  const h = createHmac("sha256", getSessionSecret()).update(payload).digest("hex").slice(0, 16);
+  return `${payload}.${h}`;
 }
 function parseSession(cookie: string | undefined): string | null {
   if (!cookie) return null;
-  const [userId, sig] = cookie.split(".");
-  if (!userId || !sig) return null;
-  const expected = signSession(userId);
-  if (cookie !== expected) return null;
-  return userId;
+  const [payload, sig] = cookie.split(".");
+  if (!payload || !sig) return null;
+  if (cookie !== signSession(payload)) return null;
+  return payload;
+}
+
+/** ID пользователя из таблицы users (вход по email). Если сессия от Telegram — null. */
+function getEmailUserId(cookie: string | undefined): number | null {
+  const payload = parseSession(cookie);
+  if (!payload || !payload.startsWith("e")) return null;
+  const id = parseInt(payload.slice(1), 10);
+  return Number.isFinite(id) ? id : null;
 }
 
 // GET /api/config — имя бота для виджета входа
@@ -145,50 +159,112 @@ app.get("/auth/verify", (req, res) => {
   res.redirect("/app");
 });
 
+// POST /api/auth/register — регистрация по email и паролю
+app.post("/api/auth/register", async (req, res) => {
+  const email = (req.body?.email as string)?.trim()?.toLowerCase();
+  const password = req.body?.password as string;
+  const name = (req.body?.name as string)?.trim() || null;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "Некорректный email" });
+  }
+  if (!password || typeof password !== "string" || password.length < 6) {
+    return res.status(400).json({ error: "Пароль не менее 6 символов" });
+  }
+  try {
+    const password_hash = await hashPassword(password);
+    const db = getDb();
+    const { lastInsertRowid } = db.prepare("INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)").run(email, password_hash, name ?? null);
+    const row = db.prepare("SELECT id, email, name FROM users WHERE id = ?").get(Number(lastInsertRowid)) as { id: number; email: string; name: string | null };
+    const session = signSession("e" + row.id);
+    res.cookie(SESSION_COOKIE, session, {
+      httpOnly: true,
+      maxAge: SESSION_MAX_AGE * 1000,
+      sameSite: "lax",
+      path: "/",
+    });
+    res.status(201).json({ ok: true, user: { id: row.id, email: row.email, name: row.name } });
+  } catch (e) {
+    const msg = String((e as Error).message || "");
+    if (msg.includes("UNIQUE") || msg.includes("unique")) {
+      return res.status(409).json({ error: "Такой email уже зарегистрирован" });
+    }
+    console.error("Register error:", e);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+// POST /api/auth/login — вход по email и паролю
+app.post("/api/auth/login", async (req, res) => {
+  const email = (req.body?.email as string)?.trim()?.toLowerCase();
+  const password = req.body?.password as string;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Укажите email и пароль" });
+  }
+  const db = getDb();
+  const row = db.prepare("SELECT id, email, name, password_hash FROM users WHERE email = ?").get(email) as
+    | { id: number; email: string; name: string | null; password_hash: string }
+    | undefined;
+  if (!row || !(await verifyPassword(password, row.password_hash))) {
+    return res.status(401).json({ error: "Неверный email или пароль" });
+  }
+  const session = signSession("e" + row.id);
+  res.cookie(SESSION_COOKIE, session, {
+    httpOnly: true,
+    maxAge: SESSION_MAX_AGE * 1000,
+    sameSite: "lax",
+    path: "/",
+  });
+  res.json({ ok: true, user: { id: row.id, email: row.email, name: row.name } });
+});
+
 // POST /api/auth/logout
 app.post("/api/auth/logout", (_req, res) => {
   res.clearCookie(SESSION_COOKIE, { path: "/" });
   res.json({ ok: true });
 });
 
-// GET /api/me — текущий пользователь
+// GET /api/me — текущий пользователь (только для входа по email)
 app.get("/api/me", (req, res) => {
-  const userId = parseSession(req.cookies?.[SESSION_COOKIE]);
+  const userId = getEmailUserId(req.cookies?.[SESSION_COOKIE]);
   if (!userId) return res.status(401).json({ error: "Not logged in" });
-  res.json({ id: userId });
+  const row = getDb().prepare("SELECT id, email, name FROM users WHERE id = ?").get(userId) as
+    | { id: number; email: string; name: string | null }
+    | undefined;
+  if (!row) return res.status(401).json({ error: "Not logged in" });
+  res.json({ id: row.id, email: row.email, name: row.name });
 });
 
-// GET /api/recaps — список рекапов (только свои)
+// GET /api/recaps — список рекапов (только свои, только для входа по email)
 app.get("/api/recaps", (req, res) => {
-  const userId = parseSession(req.cookies?.[SESSION_COOKIE]);
+  const userId = getEmailUserId(req.cookies?.[SESSION_COOKIE]);
   if (!userId) return res.status(401).json({ error: "Not logged in" });
   const style = req.query.style as string | undefined;
   const limit = Math.min(Number(req.query.limit) || 20, 50);
   const offset = Number(req.query.offset) || 0;
-  const list = listMasterClasses({ user_id: userId, style, limit, offset });
+  const list = listMasterClasses({ user_id: String(userId), style, limit, offset });
   res.json({ recaps: list });
 });
 
 // GET /api/recaps/:id — один рекап
 app.get("/api/recaps/:id", (req, res) => {
-  const userId = parseSession(req.cookies?.[SESSION_COOKIE]);
+  const userId = getEmailUserId(req.cookies?.[SESSION_COOKIE]);
   if (!userId) return res.status(401).json({ error: "Not logged in" });
   const id = Number(req.params.id);
   if (!id) return res.status(400).json({ error: "Bad id" });
   const row = getMasterClassById(id);
   if (!row) return res.status(404).json({ error: "Not found" });
-  if (row.user_id && row.user_id !== userId) return res.status(403).json({ error: "Forbidden" });
+  if (row.user_id && row.user_id !== String(userId)) return res.status(403).json({ error: "Forbidden" });
   res.json(row);
 });
 
 // GET /api/recaps/:id/video — прокси видео из Telegram (чтобы не светить токен на клиенте)
 app.get("/api/recaps/:id/video", async (req, res) => {
-  const userId = parseSession(req.cookies?.[SESSION_COOKIE]);
+  const userId = getEmailUserId(req.cookies?.[SESSION_COOKIE]);
   if (!userId) return res.status(401).json({ error: "Not logged in" });
   const id = Number(req.params.id);
   const row = getMasterClassById(id);
   if (!row || !row.video_file_id) return res.status(404).json({ error: "No video" });
-  if (row.user_id && row.user_id !== userId) return res.status(403).json({ error: "Forbidden" });
+  if (row.user_id && row.user_id !== String(userId)) return res.status(403).json({ error: "Forbidden" });
   try {
     const r = await fetch(
       `https://api.telegram.org/bot${botToken}/getFile?file_id=${encodeURIComponent(row.video_file_id)}`

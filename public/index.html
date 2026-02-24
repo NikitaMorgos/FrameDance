@@ -2,10 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>FrameDance — рамка твоего развития</title>
   <meta name="description" content="AI-тренер для танцоров и тренеров: рекапы, план тренировок, разбор видео, прогресс. Хастл, WCS, бачата, зук, контемп.">
   <link rel="canonical" href="https://framedance.ru/">
+  <!-- Иконка на экран iPhone (добавить на главный экран) -->
+  <link rel="apple-touch-icon" href="/logo/FrameDance_logo_main.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FrameDance">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -66,9 +71,38 @@
       max-height: none !important;
       max-width: none !important;
     }
-    .nav { display: flex; align-items: center; gap: 1.5rem; }
+    .nav { display: flex; align-items: center; gap: 1.5rem; position: relative; }
     .nav a { color: var(--text); text-decoration: none; font-size: 0.9375rem; font-weight: 500; }
     .nav a:hover { color: var(--primary); }
+    .nav-login-wrap { position: relative; }
+    .login-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      min-width: 280px;
+      background: #fff;
+      border: 1px solid var(--bg-section);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 1.25rem;
+      z-index: 50;
+    }
+    .login-dropdown.show { display: block; }
+    .login-dropdown h3 { margin: 0 0 1rem; font-size: 1rem; color: var(--text); }
+    .login-dropdown input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+    }
+    .login-dropdown .btn { width: 100%; padding: 0.5rem 1rem; margin-bottom: 0.75rem; }
+    .login-dropdown .login-error { color: #c00; font-size: 0.8125rem; margin-bottom: 0.5rem; }
+    .login-dropdown .login-reg { font-size: 0.8125rem; color: var(--text-muted); }
+    .login-dropdown .login-reg a { color: var(--primary); }
     .header .header-cta-button {
       background-color: #006666;
       color: #ffffff;
@@ -358,7 +392,19 @@
     <nav class="nav">
       <a href="#kak-rabotaet">Как это работает</a>
       <a href="#dlya-kogo">Кому нужно</a>
-      <a href="#" class="js-open-subscribe">Войти</a>
+      <div class="nav-login-wrap">
+        <a href="#" class="js-open-login" id="nav-login-link">Войти</a>
+        <div class="login-dropdown" id="login-dropdown">
+          <h3>Вход в личный кабинет</h3>
+          <p class="login-error" id="login-dropdown-error" hidden></p>
+          <form id="login-dropdown-form">
+            <input type="email" name="email" placeholder="Email" required autocomplete="email" />
+            <input type="password" name="password" placeholder="Пароль" required autocomplete="current-password" />
+            <button type="submit" class="btn btn-primary">Войти</button>
+          </form>
+          <p class="login-reg">Нет аккаунта? <a href="/login">Зарегистрироваться</a></p>
+        </div>
+      </div>
       <a href="#" class="btn btn-primary header-cta-button js-open-subscribe">Узнать о запуске</a>
     </nav>
   </header>
@@ -497,11 +543,11 @@
 
     <section>
       <h2 class="section-title">Всегда под рукой</h2>
-      <p class="section-desc">FrameDance работает как мобильное приложение, Telegram‑бот и веб‑версия. Ты можешь отправить рекап прямо после мастер‑класса, открыть личный кабинет на ноутбуке или ответить ученику из телефона.</p>
+      <p class="section-desc">FrameDance — мобильный веб, Telegram‑бот и веб‑кабинет. Добавь иконку на экран телефона и открывай сайт как приложение. Отправляй рекап после мастер‑класса, заходи в кабинет с ноутбука или с телефона.</p>
       <div class="platforms">
         <div class="platform">
           <div class="platform-icon">📱</div>
-          <span>Мобильное приложение</span>
+          <span>Мобильный веб (иконка на экран)</span>
         </div>
         <div class="platform">
           <div class="platform-icon">✈️</div>
@@ -595,6 +641,52 @@
           }
         } catch (err) {
           alert('Ошибка сети. Попробуйте позже.');
+        }
+        btn.disabled = false;
+      });
+    })();
+
+    // Вход в личный кабинет (dropdown под «Войти»)
+    (function() {
+      const link = document.getElementById('nav-login-link');
+      const dropdown = document.getElementById('login-dropdown');
+      const form = document.getElementById('login-dropdown-form');
+      const errEl = document.getElementById('login-dropdown-error');
+      function showErr(msg) {
+        errEl.textContent = msg || '';
+        errEl.hidden = !msg;
+      }
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdown.classList.toggle('show');
+        showErr('');
+      });
+      document.addEventListener('click', function(e) {
+        if (dropdown.classList.contains('show') && !dropdown.contains(e.target) && !link.contains(e.target)) {
+          dropdown.classList.remove('show');
+        }
+      });
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = form.querySelector('[name="email"]').value.trim().toLowerCase();
+        const password = form.querySelector('[name="password"]').value;
+        showErr('');
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        try {
+          const r = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await r.json().catch(function() { return {}; });
+          if (r.ok) {
+            window.location.href = '/app';
+            return;
+          }
+          showErr(data.error || 'Неверный email или пароль');
+        } catch (err) {
+          showErr('Ошибка сети');
         }
         btn.disabled = false;
       });

@@ -38,6 +38,16 @@ CREATE TABLE IF NOT EXISTS login_tokens (
   expires_at TEXT NOT NULL
 );
 
+-- Пользователи сайта (вход по email + пароль)
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  name TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
 -- Подписчики на запуск (форма «Узнать о запуске»)
 CREATE TABLE IF NOT EXISTS subscribers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

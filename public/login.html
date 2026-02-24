@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход — FrameDance</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: #FAFAFA;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 360px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+    }
+    h1 { margin: 0 0 1.5rem; font-size: 1.5rem; text-align: center; }
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      color: #5c5c5c;
+    }
+    .tabs button.active { color: #005F6B; font-weight: 600; border-bottom: 2px solid #005F6B; margin-bottom: -1px; }
+    .panel { display: none; }
+    .panel.show { display: block; }
+    label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #5c5c5c; }
+    input {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    input:focus { outline: none; border-color: #005F6B; }
+    .btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #005F6B;
+      color: #fff;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error { color: #c00; font-size: 0.875rem; margin-bottom: 1rem; }
+    .back { display: block; text-align: center; margin-top: 1.5rem; color: #005F6B; text-decoration: none; font-size: 0.875rem; }
+    .back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>FrameDance</h1>
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="login">Вход</button>
+      <button type="button" class="tab" data-tab="register">Регистрация</button>
+    </div>
+
+    <form id="login-form" class="panel show">
+      <div id="login-error" class="error" hidden></div>
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" name="email" required autocomplete="email" placeholder="your@email.com">
+      <label for="login-password">Пароль</label>
+      <input id="login-password" type="password" name="password" required autocomplete="current-password">
+      <button type="submit" class="btn" id="login-btn">Войти</button>
+    </form>
+
+    <form id="register-form" class="panel">
+      <div id="register-error" class="error" hidden></div>
+      <label for="register-name">Имя (необязательно)</label>
+      <input id="register-name" type="text" name="name" autocomplete="name" placeholder="Как к вам обращаться">
+      <label for="register-email">Email</label>
+      <input id="register-email" type="email" name="email" required autocomplete="email" placeholder="your@email.com">
+      <label for="register-password">Пароль (не менее 6 символов)</label>
+      <input id="register-password" type="password" name="password" required autocomplete="new-password" minlength="6">
+      <button type="submit" class="btn" id="register-btn">Зарегистрироваться</button>
+    </form>
+
+    <a href="/" class="back">← На главную</a>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const panels = document.querySelectorAll(".panel");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const t = tab.dataset.tab;
+        tabs.forEach((x) => x.classList.toggle("active", x.dataset.tab === t));
+        panels.forEach((p) => p.classList.toggle("show", p.id === t + "-form"));
+      });
+    });
+
+    function showError(formId, msg) {
+      const el = document.getElementById(formId + "-error");
+      el.textContent = msg || "";
+      el.hidden = !msg;
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("login-btn");
+      btn.disabled = true;
+      showError("login", "");
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      try {
+        const r = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          showError("login", data.error || "Ошибка входа");
+          btn.disabled = false;
+          return;
+        }
+        window.location.href = "/app";
+      } catch (err) {
+        showError("login", "Ошибка сети");
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("register-btn");
+      btn.disabled = true;
+      showError("register", "");
+      const name = document.getElementById("register-name").value.trim() || null;
+      const email = document.getElementById("register-email").value.trim().toLowerCase();
+      const password = document.getElementById("register-password").value;
+      try {
+        const r = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          showError("register", data.error || "Ошибка регистрации");
+          btn.disabled = false;
+          return;
+        }
+        window.location.href = "/app";
+      } catch (err) {
+        showError("register", "Ошибка сети");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
