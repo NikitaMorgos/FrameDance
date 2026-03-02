@@ -57,11 +57,12 @@ bot.on(message("video"), async (ctx) => {
   const fileId = video.file_id;
 
   const parsed = parseRecapCaption(caption);
-  const userId = ctx.from?.id?.toString();
+  // В личке ctx.chat.id === ctx.from.id; fallback на chat.id, чтобы рекап не сохранялся с user_id = NULL
+  const userId = ctx.from?.id?.toString() ?? ctx.chat?.id?.toString();
 
   try {
     const row = addMasterClass({
-      user_id: userId,
+      user_id: userId ?? undefined,
       style: parsed.style,
       level: parsed.level,
       skill_type: parsed.skill_type,
@@ -90,7 +91,7 @@ bot.on(message("video"), async (ctx) => {
 bot.on(message("text"), async (ctx) => {
   const text = ctx.message.text.trim();
   const textLower = text.toLowerCase();
-  const userId = ctx.from?.id?.toString();
+  const userId = ctx.from?.id?.toString() ?? ctx.chat?.id?.toString();
   if (!userId) return;
 
   // Регистрация по шагам (email → пароль)
@@ -163,7 +164,7 @@ bot.on(message("text"), async (ctx) => {
     return;
   }
 
-  if (cmd === "/list" || cmd.startsWith("/list@") || text === "база" || text === "мои рекапы" || text === "список") {
+  if (cmd === "/list" || cmd.startsWith("/list@") || textLower === "база" || textLower === "мои рекапы" || textLower === "список") {
     await sendRecapList(ctx, userId, undefined);
     return;
   }
@@ -252,7 +253,7 @@ async function sendRecapList(
 // Обработка нажатий на кнопки
 bot.action(/^list:(.*)$/, async (ctx) => {
   const style = ctx.match[1] || undefined;
-  const userId = ctx.from?.id?.toString();
+  const userId = ctx.from?.id?.toString() ?? ctx.chat?.id?.toString();
   await sendRecapList(ctx, userId, style === "" ? undefined : style);
   if (ctx.callbackQuery.message && "message_id" in ctx.callbackQuery.message) {
     await ctx.deleteMessage().catch(() => {});
@@ -262,7 +263,7 @@ bot.action(/^list:(.*)$/, async (ctx) => {
 
 bot.action(/^recap:(\d+)$/, async (ctx) => {
   const id = Number(ctx.match[1]);
-  const userId = ctx.from?.id?.toString();
+  const userId = ctx.from?.id?.toString() ?? ctx.chat?.id?.toString();
   const row = getMasterClassById(id);
   if (!row) {
     await ctx.answerCbQuery("Рекап не найден.");

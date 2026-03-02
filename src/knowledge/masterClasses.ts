@@ -69,7 +69,8 @@ export function listMasterClasses(filters: {
     params.push(filters.skill_type);
   }
   if (filters.user_id) {
-    conditions.push("user_id = ?");
+    // Показываем рекапы пользователя и рекапы без user_id (сохранённые до исправления или от имени канала)
+    conditions.push("(user_id = ? OR user_id IS NULL)");
     params.push(filters.user_id);
   }
 
