@@ -4,7 +4,7 @@ import { join } from "path";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
 import { Markup } from "telegraf";
-import { initDb } from "../db/index.js";
+import { initDb, getDb } from "../db/index.js";
 import {
   addMasterClass,
   listMasterClasses,
@@ -13,6 +13,7 @@ import {
 } from "../knowledge/masterClasses.js";
 import { createLoginToken } from "../knowledge/loginTokens.js";
 import { parseRecapCaption } from "../knowledge/parseRecapCaption.js";
+import { hashPassword } from "../server/password.js";
 
 function loadToken(): string {
   let t = process.env.TELEGRAM_BOT_TOKEN?.replace(/\s/g, "").trim() ?? "";
@@ -43,6 +44,11 @@ if (!token) {
 }
 
 const bot = new Telegraf(token);
+
+// Состояние регистрации: user_id -> { step: 'email' | 'password', email?: string }
+const registrationState = new Map<string, { step: "email"; email?: string } | { step: "password"; email: string }>();
+
+const SITE_URL = (process.env.SITE_URL || process.env.RENDER_EXTERNAL_URL || "https://framedance.ru").trim();
 
 // Рекап: пользователь присылает видео с подписью (текстовые заметки)
 bot.on(message("video"), async (ctx) => {
@@ -82,15 +88,68 @@ bot.on(message("video"), async (ctx) => {
 
 // Текстовое сообщение: команды и подсказка
 bot.on(message("text"), async (ctx) => {
-  const text = ctx.message.text.trim().toLowerCase();
+  const text = ctx.message.text.trim();
+  const textLower = text.toLowerCase();
   const userId = ctx.from?.id?.toString();
+  if (!userId) return;
 
-  const cmd = text.split(/\s/)[0];
-  if (cmd === "/start" || cmd.startsWith("/start@") || cmd === "/help" || cmd.startsWith("/help@") || text === "помощь") {
+  // Регистрация по шагам (email → пароль)
+  const state = registrationState.get(userId);
+  if (state) {
+    if (textLower === "/cancel" || textLower === "отмена") {
+      registrationState.delete(userId);
+      await ctx.reply("Регистрация отменена.");
+      return;
+    }
+    if (state.step === "email") {
+      const email = text.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        await ctx.reply("Введите корректный email.");
+        return;
+      }
+      registrationState.set(userId, { step: "password", email });
+      await ctx.reply("Теперь введите пароль (не менее 6 символов). Он будет использоваться для входа на сайт.");
+      return;
+    }
+    if (state.step === "password") {
+      const password = text;
+      if (password.length < 6) {
+        await ctx.reply("Пароль должен быть не менее 6 символов. Введите пароль ещё раз.");
+        return;
+      }
+      try {
+        const password_hash = await hashPassword(password);
+        const db = getDb();
+        db.prepare("INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)").run(state.email, password_hash, null);
+        registrationState.delete(userId);
+        const site = SITE_URL.replace(/\/$/, "");
+        await ctx.reply(
+          `✅ Готово. Вы зарегистрированы.\n\n` +
+            `На сайте ${site} нажмите «Войти» и введите:\n` +
+            `• Логин: ${state.email}\n` +
+            `• Пароль: (тот, что вы только что ввели)\n\n` +
+            `Эту пару логин/пароль сохраните — с ней вы входите в личный кабинет.`
+        );
+      } catch (e) {
+        const msg = String((e as Error).message || "");
+        if (msg.includes("UNIQUE") || msg.includes("unique")) {
+          registrationState.delete(userId);
+          await ctx.reply("Этот email уже зарегистрирован. Войдите на сайт с ним или используйте другой email (/register).");
+        } else {
+          console.error("Register in bot:", e);
+          await ctx.reply("Ошибка при регистрации. Попробуйте позже или зарегистрируйтесь на сайте.");
+        }
+      }
+      return;
+    }
+  }
+
+  const cmd = textLower.split(/\s/)[0];
+  if (cmd === "/start" || cmd.startsWith("/start@") || cmd === "/help" || cmd.startsWith("/help@") || textLower === "помощь") {
     await ctx.reply(
       "Привет! Я помогаю вести базу знаний по мастер-классам.\n\n" +
         "📹 Отправь *видео* рекапа с мастер-класса и в *подписи* напиши заметки.\n\n" +
-        "📂 Команда /list — открыть базу рекапов (список, фильтры).\n\n" +
+        "📂 /list — база рекапов. /register — зарегистрироваться для входа на сайт (email и пароль).\n\n" +
         "Чтобы рекап попал в нужный раздел, в подписи укажи (по желанию):\n" +
         "Стиль: WCS | хастл | бачата | зук | СБТ | другое\n" +
         "Уровень: начальный | средний | продвинутый | все уровни\n" +
@@ -124,6 +183,12 @@ bot.on(message("text"), async (ctx) => {
         `Сайт проекта FrameDance:\n\n${projectUrl}\n\nБаза рекапов с входом по ссылке доступна, когда сервер запущен (локально или на хостинге). Чтобы бот отправлял ссылку для входа в базу, укажи в .env переменную SITE_URL с адресом развёрнутого сайта.`
       );
     }
+    return;
+  }
+
+  if (cmd === "/register" || cmd.startsWith("/register@")) {
+    registrationState.set(userId, { step: "email" });
+    await ctx.reply("Введите email — он будет логином на сайте framedance.ru:");
     return;
   }
 
@@ -250,7 +315,8 @@ const launchBot = async (retries = 3): Promise<void> => {
       { command: "start", description: "Начать / приветствие" },
       { command: "help", description: "Подсказка по формату рекапов" },
       { command: "list", description: "Открыть базу рекапов" },
-      { command: "login", description: "Ссылка для входа на сайт с базой рекапов" },
+      { command: "register", description: "Регистрация: email и пароль для входа на сайт" },
+      { command: "login", description: "Ссылка для входа на сайт (по токену)" },
     ]);
     await bot.telegram.setChatMenuButton({ menuButton: { type: "commands" } });
     await launchBot();
